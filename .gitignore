@@ -22,3 +22,6 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+/frontend/node_modules
+/frontend/apps/*/dist
+/frontend/apps/*/.env
