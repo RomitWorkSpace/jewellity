@@ -1,0 +1,13 @@
+{
+  "name": "jewellity-frontend",
+  "private": true,
+  "type": "module",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev:storefront": "npm -w @jewellity/storefront run dev",
+    "dev:admin": "npm -w @jewellity/admin run dev",
+    "build": "npm -ws --if-present run build",
+    "typecheck": "npm -ws --if-present run typecheck",
+    "lint": "npm -ws --if-present run lint"
+  }
+}
