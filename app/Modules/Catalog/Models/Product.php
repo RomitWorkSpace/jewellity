@@ -60,6 +60,12 @@ class Product extends Model
             ->where(fn ($q) => $q->whereNull('published_at')->orWhere('published_at', '<=', now()));
     }
 
+    /** Products with at least one active variant (otherwise there is nothing to buy). */
+    public function scopePurchasable(Builder $query): Builder
+    {
+        return $query->whereHas('variants', fn ($v) => $v->where('is_active', true));
+    }
+
     public function scopeSearch(Builder $query, ?string $term): Builder
     {
         if (blank($term)) {
@@ -71,5 +77,43 @@ class Product extends Model
         return $query->where(fn ($q) => $q
             ->where('name', 'like', $like)
             ->orWhereHas('variants', fn ($v) => $v->where('sku', 'like', $like)));
+    }
+
+    /** Lowest active variant price in minor units, or null. Needs `variants` loaded. */
+    public function minPrice(): ?int
+    {
+        return $this->variants->where('is_active', true)->min('price');
+    }
+
+    public function maxPrice(): ?int
+    {
+        return $this->variants->where('is_active', true)->max('price');
+    }
+
+    /** The variant whose price is shown by default (the default one if active, else cheapest). */
+    public function displayVariant(): ?ProductVariant
+    {
+        $active = $this->variants->where('is_active', true);
+
+        return $active->firstWhere('is_default', true) ?? $active->sortBy('price')->first();
+    }
+
+    public function isSoldOut(): bool
+    {
+        $active = $this->variants->where('is_active', true);
+
+        return $active->isEmpty() || $active->every(fn (ProductVariant $v) => ! $v->isInStock());
+    }
+
+    /** Percentage off for the display variant when a higher compare-at price is set. */
+    public function discountPercent(): ?int
+    {
+        $v = $this->displayVariant();
+
+        if (! $v || ! $v->compare_at_price || $v->compare_at_price <= $v->price) {
+            return null;
+        }
+
+        return (int) round((1 - $v->price / $v->compare_at_price) * 100);
     }
 }
