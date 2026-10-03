@@ -5,6 +5,7 @@ namespace App\Modules\Catalog\Models;
 use App\Modules\Catalog\Concerns\HasUniqueSlug;
 use Database\Factories\Catalog\CategoryFactory;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,6 +26,16 @@ class Category extends Model
     protected function casts(): array
     {
         return ['is_active' => 'boolean', 'sort_order' => 'integer'];
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeRoots(Builder $query): Builder
+    {
+        return $query->whereNull('parent_id');
     }
 
     public function parent(): BelongsTo
