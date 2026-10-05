@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\User;
+use App\Support\Text;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -85,6 +86,6 @@ class AdminLoginRequest extends FormRequest
     /** Limit per normalized email + IP, so one attacker can't lock out a real admin from everywhere. */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower(trim((string) $this->input('email'))).'|'.$this->ip());
+        return Str::transliterate(Text::key($this->input('email')).'|'.$this->ip());
     }
 }
